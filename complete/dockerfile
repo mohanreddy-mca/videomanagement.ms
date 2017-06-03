@@ -1,0 +1,4 @@
+FROM java:7
+EXPOSE 9002:9002
+ADD /target/videomanagement.ms-0.1.0.jar videomanagement.ms-0.1.0.jar
+ENTRYPOINT ["java", "-jar", "videomanagement.ms-0.1.0.jar"]
