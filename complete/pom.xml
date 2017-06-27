@@ -31,6 +31,20 @@
             <scope>test</scope>
         </dependency>
         <!-- end::tests[] -->
+        
+        <!-- Google Cloud Storage API -->
+		<dependency>
+			<groupId>com.google.cloud</groupId>
+			<artifactId>google-cloud-storage</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.google.appengine.tools/appengine-gcs-client -->
+		<dependency>
+		    <groupId>com.google.appengine.tools</groupId>
+		    <artifactId>appengine-gcs-client</artifactId>
+		    <version>0.6</version>
+		</dependency>
+		
     </dependencies>
 
     <properties>
