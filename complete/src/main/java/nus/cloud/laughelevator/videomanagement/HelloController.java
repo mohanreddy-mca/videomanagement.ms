@@ -48,10 +48,6 @@ public class HelloController {
     //Working code
     private void crateBucket(){
     	Bucket bucket = storage.create(BucketInfo.of("directed-hulling-3898"));
-
-    	//InputStream content = new ByteArrayInputStream("Hello, World!".getBytes(UTF_8));
-    	//Blob blob = bucket.create("test1", bytes, "image/jpeg");
-
     	Page<Blob> getBlobs = bucket.list();
     	for (Blob blob : getBlobs.iterateAll()) {
     		System.out.println(blob);
@@ -72,70 +68,76 @@ public class HelloController {
     
     public byte[] readBlobFromStringsWithGeneration(String bucketName, String blobName,
     		long blobGeneration) {
-    	// [START readBlobFromStringsWithGeneration]
     	byte[] content = storage.readAllBytes(bucketName, blobName);
-    	//BlobSourceOption.generationMatch(blobGeneration));
-    	// [END readBlobFromStringsWithGeneration]
     	return content;
     }
     
-    // Working end
 
     public static final boolean SERVE_USING_BLOBSTORE_API = false;
     
-    @RequestMapping(value="/getvideos", method=RequestMethod.GET, 
+    @RequestMapping(value="/getvideoone", method=RequestMethod.GET, 
     		consumes = {MediaType.ALL_VALUE},
     		produces = {MediaType.IMAGE_JPEG_VALUE})
-    public void getVideosList( HttpServletRequest req, HttpServletResponse res) {
-    	
+    public void getVideosOne( HttpServletRequest req, HttpServletResponse res) {
+
     	System.out.println("========>"+req.getContentLength()+"===="+req.getContentType());
-    	  try {
+    	try {
+    		System.out.println("Done!");
+    		//sendVideosFromCloud(req,res);
+    		getVideoFromCloud(req,res, "movie1.mp4");
+    		System.out.println("Done!---2");
 
-    			System.out.println("Done!");
-    			
-    			// Send Response
-    			//sendVideosFromCloud(req,res);
-    			getVideoFromCloud(req,res);
-    			System.out.println("Done!---2");
+    	} catch (Exception e) 
+    	{ e.printStackTrace();}
 
-    	  } catch (Exception e) 
-    	  { e.printStackTrace();}
-    	  
-    	  
-    	
-        //return "Greetings from Spring Boot! and this ms is for Receive Face Detection Images from UI and saves into cloud.";
     }
     
-    private void sendVideosFromCloud(HttpServletRequest req, HttpServletResponse resp){
+    @RequestMapping(value="/getvideotwo", method=RequestMethod.GET, 
+    		consumes = {MediaType.ALL_VALUE},
+    		produces = {MediaType.IMAGE_JPEG_VALUE})
+    public void getVideosTwo( HttpServletRequest req, HttpServletResponse res) {
 
-    	try{
-    		
-    		 GcsFilename fileName = getFileName(req);
-    		    if (SERVE_USING_BLOBSTORE_API) {
-    		      BlobstoreService blobstoreService = BlobstoreServiceFactory.getBlobstoreService();
-    		      BlobKey blobKey = blobstoreService.createGsBlobKey(
-    		          "/gs/" + fileName.getBucketName() + "/" + fileName.getObjectName());
-    		      blobstoreService.serve(blobKey, resp);
-    		    } else {
-    		      GcsInputChannel readChannel = gcsService.openPrefetchingReadChannel(fileName, 0, BUFFER_SIZE);
-    		      copy(Channels.newInputStream(readChannel), resp.getOutputStream());
-    		    }
-    		
-    	}catch(Exception e){
-    		e.printStackTrace();
-    	}
+    	System.out.println("========>"+req.getContentLength()+"===="+req.getContentType());
+    	try {
+    		System.out.println("Done!");
+    		//sendVideosFromCloud(req,res);
+    		getVideoFromCloud(req,res, "movie2.mp4");
+    		System.out.println("Done!---2");
+
+    	} catch (Exception e) 
+    	{ e.printStackTrace();}
+
+    }
+    
+    @RequestMapping(value="/getvideothree", method=RequestMethod.GET, 
+    		consumes = {MediaType.ALL_VALUE},
+    		produces = {MediaType.IMAGE_JPEG_VALUE})
+    public void getVideosThree( HttpServletRequest req, HttpServletResponse res) {
+
+    	System.out.println("========>"+req.getContentLength()+"===="+req.getContentType());
+    	try {
+    		System.out.println("Done!");
+    		//sendVideosFromCloud(req,res);
+    		getVideoFromCloud(req,res, "movie3.mp4");
+    		System.out.println("Done!---2");
+
+    	} catch (Exception e) 
+    	{ e.printStackTrace();}
+
     }
     
     
-    private void getVideoFromCloud(HttpServletRequest req, HttpServletResponse resp){
+    private void getVideoFromCloud(HttpServletRequest req, HttpServletResponse resp, String filename){
     	OutputStream out = null;
     	try{
     		out = resp.getOutputStream();
     		//File file = new File("C:\\Users\\Mohan\\Desktop\\CloudComputing\\success.mp4");
-    		byte videosBytes [] = readBlobFromStringsWithGeneration("directed-hulling-3899","SampleVideo_1280x720_1mb.mp4",42);
-    		resp.setContentType(MediaType.ALL_VALUE);
+    		byte videosBytes [] = readBlobFromStringsWithGeneration("directed-hulling-3899",filename,42);
+    		resp.setContentType("video/mp4");
+    		//resp.set
     		resp.setContentLength((int)videosBytes.length);
-
+    		resp.addHeader("content-disposition", "attachment; filename=\"" + filename +"\"");
+    		resp.addHeader("filename", "SampleVideo1.mp4");
     		
     			out.write(videosBytes);
     		
@@ -155,45 +157,5 @@ public class HelloController {
     	}
     }
     
-    /**
-     * This is where backoff parameters are configured. Here it is aggressively retrying with
-     * backoff, up to 10 times but taking no more that 15 seconds total to do so.
-     */
-    private final GcsService gcsService = GcsServiceFactory.createGcsService(new RetryParams.Builder()
-        .initialRetryDelayMillis(10)
-        .retryMinAttempts(1)
-        .retryMaxAttempts(2)
-        .totalRetryPeriodMillis(15000)
-        .build());
-
-    /**Used below to determine the size of chucks to read in. Should be > 1kb and < 10MB */
-    private static final int BUFFER_SIZE = 2 * 1024 * 1024;
-
-
-    
-    private GcsFilename getFileName(HttpServletRequest req) {
-       /* String[] splits = req.getRequestURI().split("/", 4);
-        if (!splits[0].equals("") || !splits[1].equals("gcs")) {
-          throw new IllegalArgumentException("The URL is not formed as expected. " +
-              "Expecting /gcs/<bucket>/<object>");
-        }*/
-        return new GcsFilename("directed-hulling-3899", "SampleVideo_1280x720_1mb.mp4");
-      }
-
-      /**
-       * Transfer the data from the inputStream to the outputStream. Then close both streams.
-       */
-      private void copy(InputStream in, OutputStream out) throws IOException {
-        try {
-          byte[] buf = new byte[1024];;
-          int count = 0;
-  		while ((count = in.read(buf)) >= 0) {
-  			out.write(buf, 0, count);
-  		}
-        } finally {
-          in.close();
-          out.close();
-        }
-      }
 
 }
